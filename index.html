@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webhook Sender</title>
+  <title>Meeting Assistant Webhook</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: center;
-      width: 300px;
+      width: 320px;
     }
 
     input[type="text"] {
@@ -48,13 +48,12 @@
     .status {
       margin-top: 10px;
       font-size: 14px;
-      color: green;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Send to Webhook</h2>
+    <h2>Meeting Assistant</h2>
     <input type="text" id="inputText" placeholder="Enter your message">
     <br>
     <button onclick="sendWebhook()">Submit</button>
@@ -72,20 +71,31 @@
         return;
       }
 
+      statusDiv.innerText = "⏳ Sending...";
+      statusDiv.style.color = "black";
+
       try {
-        const response = await fetch("https://bluegill-sharing-unicorn.ngrok-free.app/webhook/3c8ce733-d935-45db-a87e-921e2cf5b795", {
+        // Use AbortController for timeout
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000); // 30 seconds
+
+        const response = await fetch("https://bluegill-sharing-unicorn.ngrok-free.app/webhook-test/Meeting-Assistant", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: text })
+          body: JSON.stringify({ message: text }),
+          signal: controller.signal
         });
 
+        clearTimeout(timeout);
+
         if (response.ok) {
-          statusDiv.innerText = "✅ Message sent!";
+          const data = await response.text(); // in case server returns something
+          statusDiv.innerText = "✅ Response: " + data;
           statusDiv.style.color = "green";
         } else {
-          statusDiv.innerText = "❌ Failed to send.";
+          statusDiv.innerText = "❌ Failed with status " + response.status;
           statusDiv.style.color = "red";
         }
       } catch (error) {
