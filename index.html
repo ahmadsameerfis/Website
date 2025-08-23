@@ -107,8 +107,17 @@
         clearTimeout(timeout);
 
         if (response.ok) {
-          const data = await response.json().catch(() => response.text());
-          outputBox.value = "✅ Response:\n" + JSON.stringify(data, null, 2);
+          // Decide how to parse based on content type
+          const contentType = response.headers.get("content-type") || "";
+          let data;
+
+          if (contentType.includes("application/json")) {
+            data = await response.json();
+            outputBox.value = "✅ Response (JSON):\n" + JSON.stringify(data, null, 2);
+          } else {
+            data = await response.text();
+            outputBox.value = "✅ Response (Text):\n" + data;
+          }
         } else {
           outputBox.value = "❌ Failed with status " + response.status;
         }
