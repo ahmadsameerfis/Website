@@ -20,15 +20,16 @@
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: center;
-      width: 320px;
+      width: 360px;
     }
 
-    input[type="text"] {
+    input[type="text"], input[type="email"], textarea {
       width: 90%;
       padding: 10px;
-      margin: 10px 0;
+      margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
+      font-size: 14px;
     }
 
     button {
@@ -39,68 +40,80 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
+      margin-top: 10px;
     }
 
     button:hover {
       background: #0056b3;
     }
 
-    .status {
+    label {
+      display: block;
+      text-align: left;
+      margin-left: 5%;
+      font-weight: bold;
       margin-top: 10px;
-      font-size: 14px;
+    }
+
+    textarea {
+      height: 120px;
+      resize: none;
+      background: #f9f9f9;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Meeting Assistant</h2>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="Enter your email">
+
+    <label for="inputText">Message</label>
     <input type="text" id="inputText" placeholder="Enter your message">
-    <br>
+
     <button onclick="sendWebhook()">Submit</button>
-    <div class="status" id="status"></div>
+
+    <label for="outputBox">Webhook Response</label>
+    <textarea id="outputBox" readonly></textarea>
   </div>
 
   <script>
     async function sendWebhook() {
+      const email = document.getElementById("email").value;
       const text = document.getElementById("inputText").value;
-      const statusDiv = document.getElementById("status");
+      const outputBox = document.getElementById("outputBox");
 
-      if (!text) {
-        statusDiv.innerText = "⚠️ Please enter a message!";
-        statusDiv.style.color = "red";
+      if (!email || !text) {
+        outputBox.value = "⚠️ Please enter both email and message!";
         return;
       }
 
-      statusDiv.innerText = "⏳ Sending...";
-      statusDiv.style.color = "black";
+      outputBox.value = "⏳ Sending...";
 
       try {
-        // Use AbortController for timeout
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000); // 30 seconds
+        const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-        const response = await fetch("https://bluegill-sharing-unicorn.ngrok-free.app/webhook-test/fd52d66d-6670-4cb5-85e8-9be9a6d74dd9", {
+        const response = await fetch("https://bluegill-sharing-unicorn.ngrok-free.app/webhook/fd52d66d-6670-4cb5-85e8-9be9a6d74dd9", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ message: text }),
+          body: JSON.stringify({ email: email, message: text }),
           signal: controller.signal
         });
 
         clearTimeout(timeout);
 
         if (response.ok) {
-          const data = await response.text(); // in case server returns something
-          statusDiv.innerText = "✅ Response: " + data;
-          statusDiv.style.color = "green";
+          const data = await response.json().catch(() => response.text());
+          outputBox.value = "✅ Response:\n" + JSON.stringify(data, null, 2);
         } else {
-          statusDiv.innerText = "❌ Failed with status " + response.status;
-          statusDiv.style.color = "red";
+          outputBox.value = "❌ Failed with status " + response.status;
         }
       } catch (error) {
-        statusDiv.innerText = "❌ Error: " + error.message;
-        statusDiv.style.color = "red";
+        outputBox.value = "❌ Error: " + error.message;
       }
     }
   </script>
