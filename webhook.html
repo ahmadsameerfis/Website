@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webhook Sender</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #response {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Webhook Sender</h1>
+  <p>Sending data to n8n webhook...</p>
+  <div id="response">Waiting for response...</div>
+
+  <script>
+    window.addEventListener("load", async () => {
+      const webhookUrl = "https://bluegill-sharing-unicorn.ngrok-free.app/webhook/9109440a-6ab3-42ab-b31c-7d36611254a6";
+      const responseDiv = document.getElementById("response");
+
+      // Get query string or path text
+      let extraText = "";
+      const urlParams = new URLSearchParams(window.location.search);
+      if ([...urlParams].length > 0) {
+        extraText = Object.fromEntries(urlParams.entries());
+      } else {
+        // Check if there's text after .html in path
+        const path = window.location.pathname.split("/").pop();
+        if (path.includes(".html")) {
+          const parts = path.split(".html");
+          if (parts[1]) extraText = parts[1];
+        }
+      }
+
+      try {
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: window.location.href,
+            extra: extraText
+          })
+        });
+
+        const text = await res.text();
+        responseDiv.textContent = "Response from webhook:\n" + text;
+      } catch (err) {
+        responseDiv.textContent = "Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
