@@ -71,39 +71,49 @@
     const nameInput = document.getElementById("nameInput");
     const statusInput = document.getElementById("statusInput");
     const message = document.getElementById("message");
+    const webhookUrl = "https://bluegill-sharing-unicorn.ngrok-free.app/webhook/attendance";
 
     // Load saved name on page open
     const savedName = localStorage.getItem("savedName");
+
+    // If name exists, autofill and auto-send after 5 seconds
     if (savedName) {
         nameInput.value = savedName;
+        message.textContent = "Name found. Automatically submitting in 5 seconds...";
+
+        setTimeout(() => {
+            sendWebhook(savedName, statusInput.value);
+        }, 5000);
     }
 
+    // On manual submit (first time)
     document.getElementById("submitBtn").addEventListener("click", function () {
         const name = nameInput.value.trim();
         const status = statusInput.value;
-        const datetime = new Date().toISOString();
 
         if (name === "") {
             alert("Please enter your name");
             return;
         }
 
-        // Save name locally for next visits
         localStorage.setItem("savedName", name);
 
-        // Prepare webhook payload
+        sendWebhook(name, status);
+    });
+
+    // Webhook function
+    function sendWebhook(name, status) {
+        const datetime = new Date().toISOString();
+
         const payload = {
             name: name,
             status: status,
             datetime: datetime
         };
 
-        // Send webhook
-        fetch("https://bluegill-sharing-unicorn.ngrok-free.app/webhook/attendance", {
+        fetch(webhookUrl, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         })
         .then(res => {
@@ -112,7 +122,7 @@
         .catch(err => {
             message.textContent = "Failed to send webhook.";
         });
-    });
+    }
 </script>
 
 </body>
