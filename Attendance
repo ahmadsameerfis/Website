@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            background: #0066ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #004ecc;
+        }
+        .msg {
+            margin-top: 10px;
+            font-weight: bold;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Attendance</h2>
+
+    <label>Your Name</label>
+    <input type="text" id="nameInput" placeholder="Enter your name">
+
+    <label>Status</label>
+    <select id="statusInput">
+        <option value="present" selected>Present</option>
+        <option value="absent">Absent</option>
+    </select>
+
+    <button id="submitBtn">Submit</button>
+
+    <div id="message" class="msg"></div>
+</div>
+
+<script>
+    const nameInput = document.getElementById("nameInput");
+    const statusInput = document.getElementById("statusInput");
+    const message = document.getElementById("message");
+
+    // Load saved name on page open
+    const savedName = localStorage.getItem("savedName");
+    if (savedName) {
+        nameInput.value = savedName;
+    }
+
+    document.getElementById("submitBtn").addEventListener("click", function () {
+        const name = nameInput.value.trim();
+        const status = statusInput.value;
+        const datetime = new Date().toISOString();
+
+        if (name === "") {
+            alert("Please enter your name");
+            return;
+        }
+
+        // Save name locally for next visits
+        localStorage.setItem("savedName", name);
+
+        // Prepare webhook payload
+        const payload = {
+            name: name,
+            status: status,
+            datetime: datetime
+        };
+
+        // Send webhook
+        fetch("https://bluegill-sharing-unicorn.ngrok-free.app/webhook/attendance", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            message.textContent = "Attendance submitted!";
+        })
+        .catch(err => {
+            message.textContent = "Failed to send webhook.";
+        });
+    });
+</script>
+
+</body>
+</html>
