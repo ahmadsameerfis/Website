@@ -1,4 +1,13 @@
 (function () {
+    // Detect script tag attributes (e.g. source="arkonec.com" title="AI Support Chat")
+    const currentScript = document.currentScript || document.querySelector('script[src*="chatbot-widget.js"]');
+    const widgetSource = currentScript
+        ? (currentScript.getAttribute('source') || currentScript.getAttribute('data-source') || "arkonec.com")
+        : "arkonec.com";
+    const widgetTitle = currentScript
+        ? (currentScript.getAttribute('title') || currentScript.getAttribute('data-title') || "AI Support Chat")
+        : "AI Support Chat";
+
     // 1. Inject Phosphor Icons if not present
     if (!document.querySelector('script[src*="@phosphor-icons/web"]')) {
         const iconScript = document.createElement('script');
@@ -263,7 +272,7 @@
                             </span>
                         </div>
                         <div>
-                            <h3 class="font-bold text-sm m-0 text-white drop-shadow-sm flex items-center gap-1.5">AI Support Chat</h3>
+                            <h3 class="font-bold text-sm m-0 text-white drop-shadow-sm flex items-center gap-1.5">${widgetTitle}</h3>
                             <p class="text-[11px] text-white/90 m-0 drop-shadow-sm font-medium">Online • Webhook Active</p>
                         </div>
                     </div>
@@ -411,12 +420,6 @@
             const indicator = chatBox.querySelector('#n8n-typing-indicator');
             if (indicator) indicator.remove();
         }
-
-        // Detect source attribute from the script tag (e.g., source="arkonec.com" or data-source="arkonec.com")
-        const currentScript = document.currentScript || document.querySelector('script[src*="chatbot-widget.js"]');
-        const widgetSource = currentScript
-            ? (currentScript.getAttribute('source') || currentScript.getAttribute('data-source') || "arkonec.com")
-            : "arkonec.com";
 
         async function sendN8nMessage() {
             const message = userInput.value.trim();
