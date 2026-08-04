@@ -442,7 +442,9 @@
                     body: JSON.stringify({
                         chatInput: message,
                         sessionId: currentSessionId,
-                        source: widgetSource
+                        source: widgetSource,
+                        websiteUrl: window.location.href,
+                        domain: window.location.hostname
                     })
                 });
 
