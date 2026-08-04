@@ -412,6 +412,12 @@
             if (indicator) indicator.remove();
         }
 
+        // Detect source attribute from the script tag (e.g., source="arkonec.com" or data-source="arkonec.com")
+        const currentScript = document.currentScript || document.querySelector('script[src*="chatbot-widget.js"]');
+        const widgetSource = currentScript
+            ? (currentScript.getAttribute('source') || currentScript.getAttribute('data-source') || "arkonec.com")
+            : "arkonec.com";
+
         async function sendN8nMessage() {
             const message = userInput.value.trim();
             if (!message) return;
@@ -433,7 +439,7 @@
                     body: JSON.stringify({
                         chatInput: message,
                         sessionId: currentSessionId,
-                        source: "arkonec.com"
+                        source: widgetSource
                     })
                 });
 
